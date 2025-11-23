@@ -31,8 +31,8 @@ fun BookDetailsScreen(
     onUpdate: (Int, Book) -> Unit = { id: Int, data: Book -> },
     onNavigateBack: () -> Unit = {}
 ) {
-    var title by remember { mutableStateOf(book.title) }
-    var priceStr by remember { mutableStateOf(book.price.toString()) }
+    var title by remember(book) { mutableStateOf(book.title) }
+    var priceStr by remember(book) { mutableStateOf(book.price.toString()) }
     Scaffold(modifier = modifier.fillMaxSize(),
         topBar = {
             TopAppBar(
@@ -64,9 +64,14 @@ fun BookDetailsScreen(
                     Text("Back")
                 }
                 Button(onClick = {
-                    // TODO validation
-                    val data = Book(title = title, price = priceStr.toDouble())
-                    onUpdate(book.id, data)
+                    val price = priceStr.toDoubleOrNull()
+                    if (title.isNotBlank() && price != null) {
+                        val data = Book(title = title, price = priceStr.toDouble())
+                        onUpdate(book.id, data)
+                    }
+                    else {
+                        // TODO show error similar to AddScreen
+                    }
                 }) {
                     Text("Update")
                 }

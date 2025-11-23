@@ -39,7 +39,8 @@ fun BookAddScreen(
     var titleIsError by remember { mutableStateOf(false) }
     var priceIsError by remember { mutableStateOf(false) }
 
-    Scaffold(modifier = modifier.fillMaxSize(),
+    Scaffold(
+        modifier = modifier.fillMaxSize(),
         topBar = {
             TopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -48,23 +49,44 @@ fun BookAddScreen(
                 ),
                 title = { Text("Add a book") })
         }) { innerPadding ->
-        Column(modifier = modifier.padding(innerPadding).padding(8.dp)) {
-            // TODO show error message
+        Column(
+            modifier = modifier
+                .padding(innerPadding)
+                .padding(8.dp)
+        ) {
             val orientation = LocalConfiguration.current.orientation
             val isPortrait = orientation == Configuration.ORIENTATION_PORTRAIT
             // TODO refactor duplicated code: component InputField?
             if (isPortrait) {
-                OutlinedTextField(onValueChange = { title = it },
+                OutlinedTextField(
+                    onValueChange = {
+                        title = it
+                        titleIsError = false
+                    },
                     value = title,
                     isError = titleIsError,
+                    supportingText = {
+                        if (titleIsError) {
+                            Text(text = "Title is required")
+                        }
+                    },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
                     modifier = Modifier.fillMaxWidth(),
                     label = { Text(text = "Title") })
-                OutlinedTextField(onValueChange = { priceStr = it },
+                OutlinedTextField(
+                    onValueChange = {
+                        priceStr = it
+                        priceIsError = false
+                    },
                     value = priceStr,
                     // https://medium.com/@GkhKaya00/exploring-keyboard-types-in-kotlin-jetpack-compose-ca1f617e1109
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     isError = priceIsError,
+                    supportingText = {
+                        if (priceIsError) {
+                            Text(text = "Price is required")
+                        }
+                    },
                     modifier = Modifier.fillMaxWidth(),
                     label = { Text(text = "Price") })
             } else {
@@ -72,13 +94,15 @@ fun BookAddScreen(
                     modifier = modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    OutlinedTextField(onValueChange = { title = it },
+                    OutlinedTextField(
+                        onValueChange = { title = it },
                         value = title,
                         isError = titleIsError,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
                         modifier = Modifier.weight(1f),
                         label = { Text(text = "Title") })
-                    OutlinedTextField(onValueChange = { priceStr = it },
+                    OutlinedTextField(
+                        onValueChange = { priceStr = it },
                         value = priceStr,
                         // https://medium.com/@GkhKaya00/exploring-keyboard-types-in-kotlin-jetpack-compose-ca1f617e1109
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -88,7 +112,7 @@ fun BookAddScreen(
                 }
             }
             Row(
-                modifier = modifier.fillMaxSize(),
+                modifier = modifier.fillMaxSize().padding(top = 16.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
                 Button(onClick = { onNavigateBack() }) {
@@ -110,7 +134,6 @@ fun BookAddScreen(
                     }
                     val book = Book(title = title, price = price)
                     addBook(book)
-                    //onNavigateBack()
                 }) {
                     Text("Add")
                 }
