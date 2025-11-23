@@ -23,7 +23,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import com.example.bookstoremvvmcoroutines.data.Book
-import kotlin.toString
 
 @OptIn(ExperimentalMaterial3Api::class) // TopAppBar
 @Composable
@@ -43,7 +42,6 @@ fun BookDetailsScreen(
                 ),
                 title = { Text("Book details") })
         }) { innerPadding ->
-        // TODO show error message
         Column(modifier = modifier.padding(innerPadding)) {
             // TODO layout for landscape
             // TODO add and details are very similar
@@ -69,12 +67,10 @@ fun BookDetailsScreen(
                     // TODO validation
                     val data = Book(title = title, price = priceStr.toDouble())
                     onUpdate(book.id, data)
-                    onNavigateBack()
                 }) {
                     Text("Update")
                 }
             }
-
         }
     }
 }

@@ -5,9 +5,9 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -37,16 +37,22 @@ class MainActivity : ComponentActivity() {
 fun MainScreen(modifier: Modifier = Modifier) {
     val navController = rememberNavController()
     val booksViewModel: BooksViewModel = koinViewModel()
-    val booksUIState: BooksUIState by booksViewModel.booksUIState.collectAsState()
+    val booksUIState: BooksUIState by booksViewModel.booksUIState.collectAsStateWithLifecycle()
     NavHost(navController = navController, startDestination = NavRoutes.BookList.route) {
         composable(NavRoutes.BookList.route) {
             BookListScreen(
                 booksUIState = booksUIState,
                 modifier = modifier,
                 onAdd = { navController.navigate(NavRoutes.BookAdd.route) },
-                onBookSelected =
+                onBookSelect =
                     { book -> navController.navigate(NavRoutes.BookDetails.route + "/${book.id}") },
-                onBooksReload = { booksViewModel.getBooks() }
+                onBooksReload = { booksViewModel.getBooks() },
+                onBookDelete = { book ->
+                    booksViewModel.deleteBook(book.id)
+                },
+                filterByTitle = { booksViewModel.filterByTitle(it) },
+                sortByTitle = { booksViewModel.sortByTitle(it) },
+                sortByPrice = { booksViewModel.sortByPrice(it) }
             )
         }
         composable(
@@ -60,6 +66,10 @@ fun MainScreen(modifier: Modifier = Modifier) {
             )
             BookDetailsScreen(
                 book = book,
+                onUpdate = { id, data ->
+                    booksViewModel.updateBook(id, data)
+                    navController.popBackStack()
+                },
                 onNavigateBack = { navController.popBackStack() })
         }
         composable(NavRoutes.BookAdd.route) {

@@ -19,17 +19,20 @@ class BooksViewModel(
     val booksUIState: StateFlow<BooksUIState> = _booksUIState
 
     private val _singleBookUIState = MutableStateFlow(SingleBookUIState())
-    val singleBookUIState: StateFlow<SingleBookUIState> = _singleBookUIState
+    //val singleBookUIState: StateFlow<SingleBookUIState> = _singleBookUIState
+
+    private var originalBookList: List<Book> = emptyList()
 
     init {
         getBooks()
     }
 
     fun getBooks() {
-        _booksUIState.update { it.copy(isLoading = true) }
+        _booksUIState.update { it.copy(isLoading = true, error = null) }
         viewModelScope.launch {
             when (val result = booksRepository.getBooks()) {
                 is NetworkResult.Success -> {
+                    originalBookList = result.data
                     _booksUIState.update {
                         it.copy(isLoading = false, books = result.data)
                     }
@@ -61,6 +64,75 @@ class BooksViewModel(
                     }
                 }
             }
+        }
+    }
+
+    fun deleteBook(bookId: Int) {
+        _singleBookUIState.update { it.copy(isLoading = true) }
+        viewModelScope.launch {
+            when (val result = booksRepository.deleteBook(bookId)) {
+                is NetworkResult.Success -> {
+                    _singleBookUIState.update {
+                        it.copy(isLoading = false, book = result.data)
+                    }
+                    getBooks()
+                }
+
+                is NetworkResult.Error -> {
+                    _singleBookUIState.update {
+                        it.copy(isLoading = false, error = result.error)
+                    }
+                }
+            }
+        }
+    }
+
+    fun updateBook(bookId: Int, book: Book) {
+        _singleBookUIState.update { it.copy(isLoading = true) }
+        viewModelScope.launch {
+            when (val result = booksRepository.updateBook(bookId, book)) {
+                is NetworkResult.Success -> {
+                    _singleBookUIState.update {
+                        it.copy(isLoading = false, book = result.data)
+                    }
+                    getBooks()
+                }
+
+                is NetworkResult.Error -> {
+                    _singleBookUIState.update {
+                        it.copy(isLoading = false, error = result.error)
+                    }
+                }
+            }
+        }
+    }
+
+    fun filterByTitle(titleFragment: String) {
+        if (titleFragment.isBlank()) {
+            _booksUIState.update {
+                it.copy(books = originalBookList)
+            }
+        } else {
+            _booksUIState.update {
+                it.copy(
+                    books = it.books.filter
+                    { book -> book.title.contains(titleFragment, ignoreCase = true) }
+                )
+            }
+        }
+    }
+
+    fun sortByTitle(ascending: Boolean) {
+        _booksUIState.update {
+            it.copy(books = if (ascending) it.books.sortedBy { book -> book.title }
+            else it.books.sortedByDescending { book -> book.title })
+        }
+    }
+
+    fun sortByPrice(ascending: Boolean) {
+        _booksUIState.update {
+            it.copy(books = if (ascending) it.books.sortedBy { book -> book.price }
+            else it.books.sortedByDescending { book -> book.price })
         }
     }
 }
