@@ -1,0 +1,62 @@
+package com.example.bookstoremvvmcoroutines
+
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import com.example.bookstoremvvmcoroutines.ui.theme.BookstoreMVVMCoroutinesTheme
+import com.example.bookstoremvvmcoroutines.viewmodel.BooksViewModel
+import com.example.bookstoremvvmcoroutines.views.BookAddScreen
+import com.example.bookstoremvvmcoroutines.views.BookDetailsScreen
+import com.example.bookstoremvvmcoroutines.views.BookListScreen
+import org.koin.androidx.compose.koinViewModel
+
+class MainActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+        setContent {
+            BookstoreMVVMCoroutinesTheme {
+                //BookListScreen()
+                MainScreen()
+            }
+        }
+    }
+}
+
+@Composable
+fun MainScreen(modifier: Modifier = Modifier) {
+    val navController = rememberNavController()
+    val booksViewModel: BooksViewModel = koinViewModel()
+    val booksUIState: BooksUIState by booksViewModel.booksUIState.collectAsState()
+    NavHost(navController = navController, startDestination = NavRoutes.BookList.route) {
+        composable(NavRoutes.BookList.route) {
+            BookListScreen(
+                booksUIState = booksUIState,
+                modifier = modifier,
+                onAdd = { navController.navigate(NavRoutes.BookAdd.route) },
+                onBookSelected =
+                    { book -> navController.navigate(NavRoutes.BookDetails.route + "/${book.id}") },
+)
+        }
+        composable(
+            NavRoutes.BookDetails.route + "/{bookId}",
+            arguments = listOf(navArgument("bookId") { type = NavType.IntType })
+        ) { backstackEntry ->
+            val bookId = backstackEntry.arguments?.getInt("bookId")
+            BookDetailsScreen()
+        }
+        composable(NavRoutes.BookAdd.route) {
+            BookAddScreen()
+        }
+    }
+}
