@@ -25,7 +25,7 @@ class BooksViewModel(
         getBooks()
     }
 
-    private fun getBooks() {
+    fun getBooks() {
         _booksUIState.update { it.copy(isLoading = true) }
         viewModelScope.launch {
             when (val result = booksRepository.getBooks()) {
@@ -44,7 +44,7 @@ class BooksViewModel(
         }
     }
 
-    private fun addBook(book: Book) {
+    fun addBook(book: Book) {
         _singleBookUIState.update { it.copy(isLoading = true) }
         viewModelScope.launch {
             when (val result = booksRepository.addBook(book)) {
@@ -52,6 +52,7 @@ class BooksViewModel(
                     _singleBookUIState.update {
                         it.copy(isLoading = false, book = result.data)
                     }
+                    getBooks()
                 }
 
                 is NetworkResult.Error -> {

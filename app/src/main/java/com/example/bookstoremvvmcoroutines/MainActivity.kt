@@ -13,6 +13,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.bookstoremvvmcoroutines.data.Book
 import com.example.bookstoremvvmcoroutines.ui.theme.BookstoreMVVMCoroutinesTheme
 import com.example.bookstoremvvmcoroutines.viewmodel.BooksViewModel
 import com.example.bookstoremvvmcoroutines.views.BookAddScreen
@@ -26,7 +27,6 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             BookstoreMVVMCoroutinesTheme {
-                //BookListScreen()
                 MainScreen()
             }
         }
@@ -46,17 +46,30 @@ fun MainScreen(modifier: Modifier = Modifier) {
                 onAdd = { navController.navigate(NavRoutes.BookAdd.route) },
                 onBookSelected =
                     { book -> navController.navigate(NavRoutes.BookDetails.route + "/${book.id}") },
-)
+                onBooksReload = { booksViewModel.getBooks() }
+            )
         }
         composable(
             NavRoutes.BookDetails.route + "/{bookId}",
             arguments = listOf(navArgument("bookId") { type = NavType.IntType })
         ) { backstackEntry ->
             val bookId = backstackEntry.arguments?.getInt("bookId")
-            BookDetailsScreen()
+            val book = booksUIState.books.find { it.id == bookId } ?: Book(
+                title = "No book",
+                price = 0.0
+            )
+            BookDetailsScreen(
+                book = book,
+                onNavigateBack = { navController.popBackStack() })
         }
         composable(NavRoutes.BookAdd.route) {
-            BookAddScreen()
+            BookAddScreen(
+                onNavigateBack = { navController.popBackStack() },
+                addBook = { book ->
+                    booksViewModel.addBook(book)
+                    navController.popBackStack()
+                }
+            )
         }
     }
 }

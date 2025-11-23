@@ -24,16 +24,13 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.bookstoremvvmcoroutines.BooksUIState
 import com.example.bookstoremvvmcoroutines.data.Book
-import com.example.bookstoremvvmcoroutines.viewmodel.BooksViewModel
-import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class) // TopAppBar
 @Composable
@@ -41,7 +38,8 @@ fun BookListScreen(
     booksUIState: BooksUIState,
     modifier: Modifier = Modifier,
     onAdd: () -> Unit = {},
-    onBookSelected: (Book) -> Unit = {}
+    onBookSelected: (Book) -> Unit = {},
+    onBooksReload: () -> Unit = {}
 ) {
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -70,18 +68,22 @@ fun BookListScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues),
-            onBookSelected = onBookSelected
+            onBookSelected = onBookSelected,
+            onBooksReload = onBooksReload
         )
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class) // PullToRefreshBox
 @Composable
 fun BookListPanel(
     booksUIState: BooksUIState,
-    modifier: Modifier = Modifier, onBookSelected: (Book) -> Unit = {}
+    modifier: Modifier = Modifier,
+    onBookSelected: (Book) -> Unit = {},
+    onBooksReload: () -> Unit = {}
 ) {
-    val booksViewModel: BooksViewModel = koinViewModel()
-    val booksUIState: BooksUIState by booksViewModel.booksUIState.collectAsState()
+    //val booksViewModel: BooksViewModel = koinViewModel()
+    //val booksUIState: BooksUIState by booksViewModel.booksUIState.collectAsState()
 
     Column(
         modifier = modifier
@@ -94,12 +96,21 @@ fun BookListPanel(
             CircularProgressIndicator()
         }
         AnimatedVisibility(visible = booksUIState.books.isNotEmpty()) {
-            LazyColumn {
-                items(booksUIState.books, key = { book -> book.id })
-                { book ->
-                    BookListItem(book = book, onBookSelected = onBookSelected)
+            // https://developer.android.com/develop/ui/compose/components/pull-to-refresh
+            PullToRefreshBox(
+                isRefreshing = booksUIState.isLoading,
+                onRefresh = { onBooksReload() },
+            ) {
+                LazyColumn {
+                    items(booksUIState.books, key = { book -> book.id })
+                    { book ->
+                        BookListItem(book = book, onBookSelected = onBookSelected)
+                    }
                 }
             }
+        }
+        AnimatedVisibility(visible = booksUIState.books.isEmpty()) {
+            Text(text = "No books")
         }
         AnimatedVisibility(visible = booksUIState.error != null) {
             Text(text = booksUIState.error ?: "ERROR")
