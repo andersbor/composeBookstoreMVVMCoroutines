@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -23,6 +24,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.bookstoremvvmcoroutines.data.Book
@@ -52,7 +54,8 @@ fun BookAddScreen(
         Column(
             modifier = modifier
                 .padding(innerPadding)
-                .padding(8.dp)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             val orientation = LocalConfiguration.current.orientation
             val isPortrait = orientation == Configuration.ORIENTATION_PORTRAIT
@@ -70,7 +73,10 @@ fun BookAddScreen(
                             Text(text = "Title is required")
                         }
                     },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Text,
+                        imeAction = ImeAction.Next // Move to next field
+                    ),
                     modifier = Modifier.fillMaxWidth(),
                     label = { Text(text = "Title") })
                 OutlinedTextField(
@@ -80,7 +86,13 @@ fun BookAddScreen(
                     },
                     value = priceStr,
                     // https://medium.com/@GkhKaya00/exploring-keyboard-types-in-kotlin-jetpack-compose-ca1f617e1109
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Number,
+                        imeAction = ImeAction.Done // Submit
+                    ),
+                    keyboardActions = KeyboardActions(onDone = {
+                        // Trigger update logic here
+                    }),
                     isError = priceIsError,
                     supportingText = {
                         if (priceIsError) {
@@ -88,7 +100,8 @@ fun BookAddScreen(
                         }
                     },
                     modifier = Modifier.fillMaxWidth(),
-                    label = { Text(text = "Price") })
+                    label = { Text(text = "Price") }
+                )
             } else {
                 Row(
                     modifier = modifier.fillMaxWidth(),
@@ -98,21 +111,34 @@ fun BookAddScreen(
                         onValueChange = { title = it },
                         value = title,
                         isError = titleIsError,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Text,
+                            imeAction = ImeAction.Next
+                        ),
                         modifier = Modifier.weight(1f),
-                        label = { Text(text = "Title") })
+                        label = { Text(text = "Title") }
+                    )
                     OutlinedTextField(
                         onValueChange = { priceStr = it },
                         value = priceStr,
                         // https://medium.com/@GkhKaya00/exploring-keyboard-types-in-kotlin-jetpack-compose-ca1f617e1109
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Number,
+                            imeAction = ImeAction.Done // Submit
+                        ),
+                        keyboardActions = KeyboardActions(onDone = {
+                            // Trigger update logic here
+                        }),
                         isError = priceIsError,
                         modifier = Modifier.weight(1f),
-                        label = { Text(text = "Price") })
+                        label = { Text(text = "Price") }
+                    )
                 }
             }
             Row(
-                modifier = modifier.fillMaxSize().padding(top = 16.dp),
+                modifier = modifier
+                    .fillMaxSize()
+                    .padding(top = 16.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
                 Button(onClick = { onNavigateBack() }) {
