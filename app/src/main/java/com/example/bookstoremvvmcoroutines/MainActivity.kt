@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -36,7 +37,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainScreen(modifier: Modifier = Modifier) {
     val navController = rememberNavController()
-    val booksViewModel: BooksViewModel = koinViewModel()
+    val booksViewModel: BooksViewModel = koinViewModel() // from dependency injection
     val booksUIState: BooksUIState by booksViewModel.booksUIState.collectAsStateWithLifecycle()
     NavHost(navController = navController, startDestination = NavRoutes.BookList.route) {
         composable(NavRoutes.BookList.route) {

@@ -192,7 +192,7 @@ fun BookListPanel(
                     CircularProgressIndicator()
                 } else if (booksUIState.error != null) {
                     Text(
-                        text = booksUIState.error ?: "Unknown Error",
+                        text = "Problem: ${booksUIState.error}",
                         color = MaterialTheme.colorScheme.error,
                         modifier = Modifier.padding(16.dp)
                     )

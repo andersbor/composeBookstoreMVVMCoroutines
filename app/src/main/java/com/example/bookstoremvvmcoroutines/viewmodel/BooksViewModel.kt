@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class BooksViewModel(
-    private val booksRepository: BooksRepository
+    private val booksRepository: BooksRepository // dependency injection
 ) : ViewModel() {
     private val _booksUIState = MutableStateFlow(BooksUIState())
     val booksUIState: StateFlow<BooksUIState> = _booksUIState
@@ -33,8 +33,8 @@ class BooksViewModel(
             when (val result = booksRepository.getBooks()) {
                 is NetworkResult.Success -> {
                     originalBookList = result.data
-                    _booksUIState.update {
-                        it.copy(isLoading = false, books = result.data)
+                    _booksUIState.update { uiState ->
+                        uiState.copy(isLoading = false, books = result.data)
                     }
                 }
 
